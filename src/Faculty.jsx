@@ -3,14 +3,16 @@ import * as THREE from 'three'
 import Professor, { PROFESSORS } from './Professor.jsx'
 import { DRUMS, LECTERNS } from './layout.js'
 
-// which Hogwarts professor teaches in which classroom (matches the slide decks)
+// which professor teaches in which classroom (matches the slide decks).
+// 'zaman' (MGT 409, Evans 2200 per the course database) and 'schott' (MGT 407) are real professors
+// you can chat with; App.jsx draws them, so Faculty only adds their name plaques.
 export const ROOM_PROFESSOR = {
-  2400: 'dumbledore', // MGT 409 AI Foundations for Managers
+  2400: 'dumbledore', // MGT 402 Basics of Accounting
   2410: 'mcgonagall', // MGT 404 Basics of Economics
   2420: 'trelawney', // MGT 403 Probability Modeling & Statistics
   2430: 'slughorn', // MGT 887 Negotiations
-  2200: 'snape', // MGT 402 Basics of Accounting
-  2210: 'lockhart', // MGT 538 Mastering Influence & Persuasion
+  2200: 'zaman', // MGT 409 AI Foundations for Managers
+  2210: 'schott', // MGT 407 Statistics (EMBA), drawn by Schott.jsx
   2220: 'moody', // MGT 800 Crisis Management in Tech
   2230: 'flitwick', // MGT 541 Corporate Finance
 }
@@ -33,18 +35,25 @@ function plaqueTex(name) {
   return t
 }
 
+const NAMES = { zaman: 'Tauhid Zaman', schott: 'Peter Schott' }
+
+// where the professor stands in a classroom: front of the room, facing the seats
+export function professorSpot(roomId) {
+  const { fc, back, t, half, rot } = DRUMS.find((d) => d.id === roomId).front
+  return { pos: [fc[0] + back[0] * 1.15 - t[0] * half * 0.3, 0, fc[1] + back[1] * 1.15 - t[1] * half * 0.3], rot }
+}
+
 export default function Faculty() {
   const items = useMemo(
     () =>
       DRUMS.map((d, i) => {
         const who = ROOM_PROFESSOR[d.id]
-        const { fc, back, t, half, rot } = d.front
+        const { back, rot } = d.front
         const lec = LECTERNS[i]
         return {
           who,
-          pos: [fc[0] + back[0] * 1.15 - t[0] * half * 0.3, 0, fc[1] + back[1] * 1.15 - t[1] * half * 0.3],
-          rot,
-          plaque: { p: [lec.x + back[0] * 0.26, 0.85, lec.z + back[1] * 0.26], rot, mat: new THREE.MeshBasicMaterial({ map: plaqueTex(PROFESSORS[who].name) }) },
+          ...professorSpot(d.id),
+          plaque: { p: [lec.x + back[0] * 0.26, 0.85, lec.z + back[1] * 0.26], rot, mat: new THREE.MeshBasicMaterial({ map: plaqueTex(NAMES[who] ?? PROFESSORS[who].name) }) },
         }
       }),
     [],
@@ -53,7 +62,7 @@ export default function Faculty() {
     <>
       {items.map((it, i) => (
         <group key={i}>
-          <Professor who={it.who} position={it.pos} rotation={it.rot} phase={i * 1.7} />
+          {PROFESSORS[it.who] && <Professor who={it.who} position={it.pos} rotation={it.rot} phase={i * 1.7} />}
           <mesh position={it.plaque.p} rotation={[0, it.plaque.rot, 0]} material={it.plaque.mat}>
             <planeGeometry args={[0.6, 0.15]} />
           </mesh>

@@ -3,12 +3,13 @@ import * as THREE from 'three'
 // Lecture slides drawn on canvas, one deck per course (Yale SOM Fall 2026 MBA courses).
 // kind: 'title' | 'chart' | 'content'
 export const COURSES = {
-  mgt409: { code: 'MGT 409', name: 'AI Foundations for Managers', prof: 'Albus Dumbledore' },
+  mgt409: { code: 'MGT 409', name: 'AI Foundations for Managers', prof: 'Tauhid Zaman' },
   mgt404: { code: 'MGT 404', name: 'Basics of Economics', prof: 'Minerva McGonagall' },
   mgt403: { code: 'MGT 403', name: 'Probability Modeling & Statistics', prof: 'Sybill Trelawney' },
   mgt887: { code: 'MGT 887', name: 'Negotiations', prof: 'Horace Slughorn' },
-  mgt402: { code: 'MGT 402', name: 'Basics of Accounting', prof: 'Severus Snape' },
+  mgt402: { code: 'MGT 402', name: 'Basics of Accounting', prof: 'Albus Dumbledore' },
   mgt538: { code: 'MGT 538', name: 'Mastering Influence & Persuasion', prof: 'Gilderoy Lockhart' },
+  mgt407: { code: 'MGT 407', name: 'Statistics (EMBA)', prof: 'Peter Schott' },
   mgt800: { code: 'MGT 800', name: 'Crisis Management in Tech', prof: 'Alastor Moody' },
   mgt541: { code: 'MGT 541', name: 'Corporate Finance', prof: 'Filius Flitwick' },
 }
@@ -46,6 +47,11 @@ const DECKS = {
     title: ['The Balance Sheet', 'Assets = Liabilities + Equity'],
     content: ['Reading an income statement', ['Revenue − COGS = Gross profit', 'Gross profit − OpEx = Operating income', 'Accrual ≠ cash: watch working capital', 'Every debit has a credit. Turn to page 394.']],
     chart: 'balance',
+  },
+  mgt407: {
+    title: ['Regression, Totally Rad', 'One line, a whole lot of data'],
+    content: ['Reading a regression', ['ŷ = b₀ + b₁x: b₁ = change in y per unit of x', 'R² = share of the variance explained', 'SE(b₁) shrinks like σ / √n', 'Correlation ≠ causation. Feedback welcome!']],
+    chart: 'regression',
   },
   mgt538: {
     title: ['The Science of Yes', 'Influence without magic'],
@@ -147,6 +153,39 @@ function drawChart(g, which) {
     g.fillStyle = INK
     g.fillText('68% within ±1σ', mx - 105, 470)
     g.fillText('μ', mx - 8, oy + 40)
+  } else if (which === 'regression') {
+    axes()
+    // scatter around a fitted line, residual sticks on a few points
+    const pts = Array.from({ length: 22 }, (_, i) => {
+      const x = ox + 70 + i * 42
+      const noise = Math.sin(i * 12.9898) * 43758.5453
+      return [x, 560 - (x - ox) * 0.36 + ((noise - Math.floor(noise)) - 0.5) * 150]
+    })
+    const fit = (x) => 560 - (x - ox) * 0.36
+    g.strokeStyle = 'rgba(255,79,163,0.7)'
+    g.lineWidth = 3
+    pts.filter((_, i) => i % 4 === 1).forEach(([x, y]) => {
+      g.beginPath()
+      g.moveTo(x, y)
+      g.lineTo(x, fit(x))
+      g.stroke()
+    })
+    g.fillStyle = BLUE
+    pts.forEach(([x, y]) => {
+      g.beginPath()
+      g.arc(x, y, 9, 0, Math.PI * 2)
+      g.fill()
+    })
+    g.strokeStyle = PINK
+    g.lineWidth = 6
+    g.beginPath()
+    g.moveTo(ox + 30, fit(ox + 30))
+    g.lineTo(1120, fit(1120))
+    g.stroke()
+    g.fillStyle = INK
+    g.fillText('ŷ = b₀ + b₁x', 880, 230)
+    g.fillText('x', 1120, 640)
+    g.fillText('y', 140, 190)
   } else if (which === 'payoff') {
     const x0 = 360
     const y0 = 200

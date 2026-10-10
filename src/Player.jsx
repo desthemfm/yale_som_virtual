@@ -35,7 +35,9 @@ export default function Player({ lockRef, mapRef, touchRef, onLock, onWhere }) {
     }
     controls.addEventListener('lock', on)
     controls.addEventListener('unlock', off)
+    const typing = (e) => e.target.closest?.('input, textarea') // chat box: don't walk or jump while typing
     const down = (e) => {
+      if (typing(e)) return
       keys.current[e.code] = true
       if (e.code === 'Space') e.preventDefault()
     }
