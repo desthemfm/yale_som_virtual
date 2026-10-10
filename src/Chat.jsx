@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 // Chat window for talking to a professor agent on the FastAPI backend (backend/).
 // In dev, Vite proxies /api to localhost:8000; a deployed build sets VITE_API_URL.
-const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+const rawApi = (import.meta.env.VITE_API_URL ?? '').trim().replace(/\/$/, '')
+const API = rawApi && !rawApi.includes('://') ? `https://${rawApi}` : rawApi // Render passes a bare hostname
 
 const STARTERS = ['What room do you teach in?', 'Explain the central limit theorem', 'Who teaches the core stats class?']
 

@@ -26,7 +26,11 @@ for folder in BACKEND.parents:
 MODEL_NAME = os.getenv("OPENAI_MODEL") or "gpt-6-luna"
 PORTKEY_BASE_URL = os.getenv("PORTKEY_BASE_URL") or "https://api.portkey.ai/v1"
 DB_PATH = Path(os.getenv("DB_PATH") or REPO / "data" / "yale_som.db")
-ALLOWED_ORIGINS = [o.strip() for o in (os.getenv("ALLOWED_ORIGINS") or "http://localhost:5173").split(",") if o.strip()]
+ALLOWED_ORIGINS = [
+    o if "://" in o else f"https://{o}"  # Render passes bare hostnames between services
+    for o in (x.strip().rstrip("/") for x in (os.getenv("ALLOWED_ORIGINS") or "http://localhost:5173").split(","))
+    if o
+]
 REQUEST_TIMEOUT_SEC = 90
 
 
